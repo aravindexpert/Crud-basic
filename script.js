@@ -37,6 +37,7 @@ function addDataToTable() {
 // Function to create data
 function createData(name, email) {
     const newData = {
+        id: Date.now(), 
         name: name,
         email: email
     };
@@ -72,56 +73,85 @@ function deleteData(index) {
     saveData();
 }
 
-// Function to edit data
-function editData(index) {
+// Function to reset the form for creating new data
+function resetForm() {
+    const nameInput = document.getElementById('nameInput');
+    const emailInput = document.getElementById('emailInput');
+    const submitBtn = document.getElementById('submitBtn');
+  
+    nameInput.value = '';
+    emailInput.value = '';
+    submitBtn.textContent = 'Create';
+    submitBtn.dataset.action = 'create';
+    delete submitBtn.dataset.index; // Remove the index data attribute
+  }
+  
+  // Function to edit data
+  function editData(index) {
     const item = data[index];
     const nameInput = document.getElementById('nameInput');
     const emailInput = document.getElementById('emailInput');
     const submitBtn = document.getElementById('submitBtn');
-
+  
     nameInput.value = item.name;
     emailInput.value = item.email;
     submitBtn.textContent = 'Update';
-
-    // Update the data when the form is submitted
+    submitBtn.dataset.action = 'update';
+    submitBtn.dataset.index = index;
+  
+    // Set the form's onsubmit event listener to update the data after editing
     document.getElementById('crudForm').onsubmit = function(e) {
-        e.preventDefault();
-        const name = nameInput.value.trim();
-        const email = emailInput.value.trim();
-
-        if (name && email) {
-            updateData(index, name, email);
-            addDataToTable();
-            saveData();
-
-            nameInput.value = '';
-            emailInput.value = '';
-            submitBtn.textContent = 'Create';
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+  
+      if (name && email) {
+        const action = submitBtn.dataset.action;
+        if (action === 'update') {
+          const index = parseInt(submitBtn.dataset.index, 10);
+          updateData(index, name, email);
+        } else if (action === 'create') {
+          createData(name, email);
         }
+  
+        addDataToTable();
+        saveData();
+  
+        resetForm(); // Reset the form to its initial state for creating new data
+      }
     };
-}
-
-// Function to handle form submission
-document.getElementById('crudForm').onsubmit = function(e) {
+  }
+  
+  // Function to handle form submission for adding new data
+  document.getElementById('crudForm').onsubmit = function(e) {
     e.preventDefault();
     const nameInput = document.getElementById('nameInput');
     const emailInput = document.getElementById('emailInput');
-
+    const submitBtn = document.getElementById('submitBtn');
+  
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
-
+  
     if (name && email) {
+      const action = submitBtn.dataset.action;
+      if (action === 'create') {
         createData(name, email);
-        addDataToTable();
-        saveData();
-
-        nameInput.value = '';
-        emailInput.value = '';
+      } else if (action === 'update') {
+        const index = parseInt(submitBtn.dataset.index, 10);
+        updateData(index, name, email);
+      }
+  
+      addDataToTable();
+      saveData();
+  
+      resetForm(); // Reset the form to its initial state for creating new data
     } else {
-        alert('Please fill in all the fields!');
+      alert('Please fill in all the fields!');
     }
-};
+  };
 
-// Read data from local storage and populate the table
-readData();
-addDataToTable();
+  
+  
+  // Read data from local storage and populate the table
+  readData();
+  addDataToTable();
